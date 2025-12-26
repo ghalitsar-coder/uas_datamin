@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import {
   Database,
@@ -54,33 +52,25 @@ interface UploadProgress {
   message: string;
 }
 
-export default function Home() {
+const Index = () => {
   const [activeTab, setActiveTab] = useState<"upload" | "search">("upload");
   const [folderPath, setFolderPath] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<SearchResponse | null>(
-    null
-  );
+  const [searchResults, setSearchResults] = useState<SearchResponse | null>(null);
   const [isIndexed, setIsIndexed] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(
-    null
-  );
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
 
   // Mock data for demo
   const mockStats = {
     totalDocuments: documents.length,
     totalWords: documents.reduce((acc, doc) => acc + doc.word_count, 0),
-    avgWords:
-      documents.length > 0
-        ? Math.round(
-            documents.reduce((acc, doc) => acc + doc.word_count, 0) /
-              documents.length
-          )
-        : 0,
+    avgWords: documents.length > 0 
+      ? Math.round(documents.reduce((acc, doc) => acc + doc.word_count, 0) / documents.length)
+      : 0,
   };
 
   const handleUpload = async () => {
@@ -129,7 +119,7 @@ export default function Home() {
                 setIsIndexed(true);
                 setUploadProgress(null);
               }
-            } catch {
+            } catch (e) {
               // Skip invalid JSON
             }
           }
@@ -175,7 +165,7 @@ export default function Home() {
       <header className="relative overflow-hidden border-b border-border/50">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-secondary/5 to-accent/5" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
-
+        
         <div className="relative container mx-auto px-6 py-10">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div className="space-y-2">
@@ -189,8 +179,7 @@ export default function Home() {
                 </h1>
               </div>
               <p className="text-muted-foreground max-w-lg">
-                TF-IDF + Generalized Jaccard Similarity + Sastrawi Stemming
-                untuk pencarian dokumen yang akurat
+                TF-IDF + Generalized Jaccard Similarity + Sastrawi Stemming untuk pencarian dokumen yang akurat
               </p>
             </div>
 
@@ -348,14 +337,12 @@ export default function Home() {
                   ))}
                 </div>
               </div>
-            ) : (
-              !loading && (
-                <EmptyState
-                  icon={FolderOpen}
-                  title="Belum Ada Dokumen"
-                  description="Masukkan path folder dan klik 'Load Dokumen' untuk memulai indexing dataset Anda."
-                />
-              )
+            ) : !loading && (
+              <EmptyState
+                icon={FolderOpen}
+                title="Belum Ada Dokumen"
+                description="Masukkan path folder dan klik 'Load Dokumen' untuk memulai indexing dataset Anda."
+              />
             )}
           </div>
         )}
@@ -412,8 +399,7 @@ export default function Home() {
               {!isIndexed && (
                 <div className="flex items-center gap-2 mt-4 text-sm text-warning">
                   <AlertCircle className="h-4 w-4" />
-                  Upload dokumen terlebih dahulu di tab &quot;Dataset &
-                  Indexing&quot;
+                  Upload dokumen terlebih dahulu di tab "Dataset & Indexing"
                 </div>
               )}
             </div>
@@ -440,7 +426,6 @@ export default function Home() {
                         similarity={result.similarity}
                         preview={result.original_text}
                         wordCount={result.word_count}
-                        maxScore={searchResults.results[0]?.similarity || 1}
                       />
                     ))}
                   </div>
@@ -474,4 +459,6 @@ export default function Home() {
       </footer>
     </div>
   );
-}
+};
+
+export default Index;
