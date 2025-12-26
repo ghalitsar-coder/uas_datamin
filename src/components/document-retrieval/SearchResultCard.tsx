@@ -3,22 +3,26 @@ import { FileText, Hash, Trophy } from "lucide-react";
 
 interface SearchResultCardProps {
   rank: number;
+  docId: number;
   filename: string;
   similarity: number;
   preview: string;
   wordCount: number;
   className?: string;
   maxScore?: number; // Skor tertinggi untuk normalisasi
+  onClick?: () => void;
 }
 
 export function SearchResultCard({
   rank,
+  docId,
   filename,
   similarity,
   preview,
   wordCount,
   className,
   maxScore = 1,
+  onClick,
 }: SearchResultCardProps) {
   const getRankStyle = (rank: number) => {
     if (rank === 1) return "from-amber-400 to-yellow-500";
@@ -47,8 +51,10 @@ export function SearchResultCard({
 
   return (
     <div
+      onClick={onClick}
       className={cn(
         "group rounded-xl border border-border/50 bg-card overflow-hidden shadow-soft card-hover",
+        onClick && "cursor-pointer hover:border-primary/50 transition-all",
         className
       )}
     >

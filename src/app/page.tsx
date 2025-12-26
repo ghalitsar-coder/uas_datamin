@@ -21,6 +21,7 @@ import { SearchResultCard } from "@/components/document-retrieval/SearchResultCa
 import { ProcessingProgress } from "@/components/document-retrieval/ProcessingProgress";
 import { QueryInfoCard } from "@/components/document-retrieval/QueryInfoCard";
 import { EmptyState } from "@/components/document-retrieval/EmptyState";
+import { DocumentDetailModal } from "@/components/document-retrieval/DocumentDetailModal";
 
 // Types
 interface Document {
@@ -28,6 +29,16 @@ interface Document {
   filename: string;
   original_text_preview: string;
   processed_text_preview: string;
+  word_count: number;
+}
+
+interface DocumentDetail {
+  id: number;
+  filename: string;
+  file_path: string;
+  original_text: string;
+  processed_text: string;
+  tokens: string[];
   word_count: number;
 }
 
@@ -69,6 +80,12 @@ export default function Home() {
     null
   );
   const [searchLoading, setSearchLoading] = useState(false);
+  const [currentSearchQuery, setCurrentSearchQuery] = useState(""); // Track search query for highlighting
+
+  // Modal state
+  const [selectedDocument, setSelectedDocument] =
+    useState<DocumentDetail | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Mock data for demo
   const mockStats = {
@@ -162,11 +179,51 @@ export default function Home() {
 
       const data = await response.json();
       setSearchResults(data);
+      setCurrentSearchQuery(searchQuery); // Save for highlighting
     } catch (err) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan");
     } finally {
       setSearchLoading(false);
     }
+  };
+
+  const handleDocumentClick = async (docId: string) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/document/${docId}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch document detail");
+
+      const data = await response.json();
+      setSelectedDocument(data.document);
+      setIsModalOpen(true);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Gagal memuat detail dokumen"
+      );
+    }
+  };
+
+  const handleSearchResultClick = async (docId: number) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/document/${docId}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch document detail");
+
+      const data = await response.json();
+      setSelectedDocument(data.document);
+      setIsModalOpen(true);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Gagal memuat detail dokumen"
+      );
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedDocument(null);
   };
 
   return (
@@ -344,6 +401,7 @@ export default function Home() {
                       originalPreview={doc.original_text_preview}
                       processedPreview={doc.processed_text_preview}
                       wordCount={doc.word_count}
+                      onClick={() => handleDocumentClick(doc.id)}
                     />
                   ))}
                 </div>
@@ -432,15 +490,17 @@ export default function Home() {
                 {/* Results Grid */}
                 {searchResults.results.length > 0 ? (
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 stagger-children">
-                    {searchResults.results.map((result) => (
+                    {searchResults.results.map((result, idx) => (
                       <SearchResultCard
                         key={`${result.rank}-${result.filename}`}
                         rank={result.rank}
+                        docId={idx}
                         filename={result.filename}
                         similarity={result.similarity}
                         preview={result.original_text}
                         wordCount={result.word_count}
                         maxScore={searchResults.results[0]?.similarity || 1}
+                        onClick={() => handleSearchResultClick(idx)}
                       />
                     ))}
                   </div>
@@ -472,6 +532,14 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Document Detail Modal */}
+      <DocumentDetailModal
+        document={selectedDocument}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        searchQuery={currentSearchQuery}
+      />
     </div>
   );
 }
